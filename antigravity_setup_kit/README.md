@@ -70,6 +70,27 @@ This step provisions the Linux environment with necessary tools, configurations,
 
 5.  **Finalize:**
     You must restart WSL to apply the security hardening and filesystem changes:
+        ```powershell
+        wsl --shutdown
+        ```
+    
+    ## 3. Backup & Recovery
+    
+    To protect your work or quickly recover from a broken state, it is recommended to create regular backups of your WSL distribution.
+    
+    ### Export (Backup)
+    This creates a `.tar` file containing the entire filesystem of your distribution.
     ```powershell
-    wsl --shutdown
+    # Format: wsl --export <DistroName> <DestinationPath>.tar
+    wsl --export Antigravity C:\Backups\antigravity_backup.tar
     ```
+    
+    ### Import (Restore)
+    This restores a previously exported distribution to a specific folder.
+    ```powershell
+    # Format: wsl --import <DistroName> <InstallLocation> <BackupPath>.tar
+    wsl --import Antigravity C:\WSL\Antigravity C:\Backups\antigravity_backup.tar
+    ```
+    
+    **Note:** You can also use the helper scripts in `windows/backup_distro.ps1` and `windows/restore_distro.ps1` for an interactive process.
+    

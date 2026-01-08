@@ -16,6 +16,7 @@ The kit handles:
     *   **Security Hardening:** Enforces **Read-Only** access to Windows drives to prevent data loss.
     *   **Scaling Fixes:** Installs a shim to force crisp Wayland rendering.
     *   **Integration:** Installs `wslu` (browser), configures `.bashrc`, and restores Agent memory (`GEMINI.md`).
+*   **Backup & Recovery:** Provides interactive scripts (`backup_distro.ps1`, `restore_distro.ps1`) and documentation to protect your environment.
 
 See [`antigravity_setup_kit/README.md`](./antigravity_setup_kit/README.md) for execution instructions.
 

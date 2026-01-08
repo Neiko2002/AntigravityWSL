@@ -8,4 +8,10 @@ Write-Host "Copying .wslgconfig to $DestConfig..."
 Copy-Item -Force $SourceConfig $DestConfig
 
 Write-Host "Windows setup complete."
-Write-Host "Please run 'wsl --shutdown' to apply the DPI scaling fix."
+
+$backupChoice = Read-Host "Would you like to create a backup of a WSL distribution now? (y/n)"
+if ($backupChoice -eq 'y') {
+    .\backup_distro.ps1
+}
+
+Write-Host "Please run 'wsl --shutdown' to apply any pending changes (like the DPI scaling fix)."
