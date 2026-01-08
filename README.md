@@ -1,6 +1,6 @@
 # WSL Agent & Antigravity Environment
 
-**Root Directory:** `C:\Lang\wsl_agent`
+**Root Directory:** `[Current Project Folder]`
 
 This repository serves as the central documentation and configuration hub for the hybrid Windows/WSL Development Agent. It defines how to set up, maintain, and work within the WSL 2 environment using the Antigravity IDE (Cursor/VSCode fork).
 
@@ -43,7 +43,7 @@ If setup correctly (via the Kit), clicking "Sign in with Google" or opening link
 ## 3. Directory Structure & Conventions
 
 ### Hybrid Layout
-*   **Windows (Host):** `C:\Lang\wsl_agent`
+*   **Windows (Host):** `[Project Root]`
     *   Stores this documentation, the Setup Kit, and high-level agent context.
     *   Acts as the "Safe Harbor" for recovery.
 *   **WSL (Guest):** `~/lang/`
@@ -70,7 +70,7 @@ Projects are organized by language in the home directory:
 
 **CRITICAL INSTRUCTION FOR AI AGENTS:**
 
-This directory (`C:\Lang\wsl_agent`) is the **Single Source of Truth** for the entire development environment.
+This directory (`[Project Root]`) is the **Single Source of Truth** for the entire development environment.
 
 1.  **No Ad-Hoc Fixes:** You are **strictly forbidden** from applying "one-off" fixes to the live system (e.g., editing `/etc/wsl.conf` directly or manually hacking a script in `~/.local/bin`).
 2.  **Commit First, Apply Second:**
