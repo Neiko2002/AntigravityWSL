@@ -1,96 +1,49 @@
 # Antigravity Setup Kit
 
-This kit is the **Master Source of Truth** for the Antigravity IDE environment. It is designed to provision a reproducible, hardened, and high-performance development environment on a fresh WSL instance.
+This kit is the **Master Source of Truth** for the Antigravity IDE environment. It is designed to provision a reproducible, hardened, and high-performance development environment on WSL, and to seamlessly keep it updated over time.
 
-## 0. Provisioning a New Distro (Optional)
+## 1. Automated Setup (Recommended)
+**Location:** `windows/wsl_dev_setup.ps1`
 
-If you are starting with a completely fresh environment or want a dedicated "Antigravity" distro:
+The easiest way to get started is to use the automated installer:
 
-1.  **Install the Base Image:**
-    ```powershell
-    wsl --install Ubuntu-24.04 --name Antigravity --no-launch --web-download
-    ```
-2.  **Bootstrap the User:**
-    Run these as root to ensure the agent's environment matches expectations (Replace `<username>` with the user's preferred name - **Ask the user for this before proceeding**):
-    ```powershell
-    wsl -d Antigravity -u root -- bash -c "useradd -m -s /bin/bash <username> && usermod -aG sudo <username> && echo '<username> ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/<username>"
-    ```
+1. Open PowerShell in the `windows` directory.
+2. Run the master script:
+   ```powershell
+   .\wsl_dev_setup.ps1
+   ```
+3. Select **Option 1**. This will:
+   * Configure your Windows host for proper graphical scaling.
+   * Create or update the `Antigravity` WSL distribution.
+   * **Automatically reach inside Linux** and run the internal `install.sh` for you.
 
-## 1. Windows Host Setup
-**Location:** `windows/`
+---
 
-This step configures the Windows host to support the specific needs of the WSL environment, particularly for graphics scaling.
-
-**Files:**
-*   `.wslgconfig`: Configuration file for WSLg (WSL GUI) to ensure proper DPI scaling.
-*   `setup_host.ps1`: PowerShell automation script.
-
-**Instructions:**
-1.  Open PowerShell in the `windows` directory.
-2.  Run `.\setup_host.ps1`.
-3.  **Action:** Copies `.wslgconfig` to `%USERPROFILE%`.
-4.  **Restart Required:** Run `wsl --shutdown` to apply changes.
-
-## 2. WSL Guest Setup
+## 2. Manual Linux Setup (Alternative)
 **Location:** `wsl/`
 
-This step provisions the Linux environment with necessary tools, configurations, and security policies.
+If you prefer to run the internal Linux setup manually, or if you need to troubleshoot:
 
-**Files:**
-*   `install.sh`: The master provisioning script. **Now automatically configures the APT repository.**
-*   `antigravity-repo-key.gpg`: **APT Keyring for the IDE.**
-*   `wsl.conf`: **Hardened System Configuration.**
-    *   Enforces **Read-Only** mounting of Windows drives (`/mnt/c`) to prevent accidental data corruption or "rm -rf" disasters on the host OS.
-    *   Enables `systemd` and metadata support.
-*   `antigravity_shim.sh`: **Scaling Fix Wrapper.**
-    *   Installed to `/usr/local/bin/antigravity`.
-    *   Forces the IDE to use the `Wayland` backend (`--ozone-platform=wayland`) to resolve blurriness on High-DPI screens.
-*   `antigravity.desktop`: Start Menu shortcut pointing to the shim.
-*   `GEMINI.md`: The Agent's long-term memory bootstrap file.
-*   `bashrc_snippet.sh`: Shell configuration for browser integration (`wslu`).
+1. Start your WSL terminal (`wsl -d Antigravity`).
+2. Navigate to the `wsl` folder:
+   ```bash
+   cd /mnt/c/Lang/wsl_agent/antigravity_setup_kit/wsl
+   ```
+3. Run the installer:
+   ```bash
+   bash install.sh
+   ```
 
-**Instructions:**
-1.  Start your WSL terminal (e.g., Ubuntu).
-2.  Navigate to the `wsl` folder within the setup kit on your Windows mount (e.g., `/mnt/c/path/to/antigravity_setup_kit/wsl`):
-    ```bash
-    cd /mnt/c/.../antigravity_setup_kit/wsl
-    ```
-3.  Run the installer:
-    ```bash
-    chmod +x install.sh
-    ./install.sh
-    ```
-4.  **Actions Performed:**
-    *   Installs system dependencies (Ubuntu 24.04 compatible).
-    *   Configures `~/.bashrc` for browser integration.
-    *   Installs the **Antigravity Shim** and **Desktop Entry**.
-    *   Restores Agent Memory (`~/.gemini/GEMINI.md`).
-    *   Applies **Hardened `wsl.conf`** to `/etc/wsl.conf`.
-    *   **Cleans Start Menu:** Hides `wslview` and `zutty` icons from Windows.
+### What does `install.sh` do?
+*   **Updates Repositories:** Pulls the newest apt lists.
+*   **Installs & Upgrades:** Sets up necessary libraries (Ubuntu 24.04 `t64` libraries) and explicitly forces an upgrade of the `antigravity` package to the latest version.
+*   **Installs Gemini CLI:** Sets up Bun and the `@google/gemini-cli` environment.
+*   **Configures IDE Shim:** Installs the `antigravity_shim.sh` wrapper (adds Wayland scaling flags) and the `.desktop` UI icons for Antigravity and Gemini.
+*   **Applies Hardened `wsl.conf`:** Enforces Read-Only mounting for `/mnt/c` to protect Windows from runaway commands.
+*   **Cleans Menus:** Removes redundant app icons (like `wslview`) from the Windows Start menu.
 
-5.  **Finalize:**
-    You must restart WSL to apply the security hardening and filesystem changes:
-        ```powershell
-        wsl --shutdown
-        ```
-    
-    ## 3. Backup & Recovery
-    
-    To protect your work or quickly recover from a broken state, it is recommended to create regular backups of your WSL distribution.
-    
-    ### Export (Backup)
-    This creates a `.tar` file containing the entire filesystem of your distribution.
-    ```powershell
-    # Format: wsl --export <DistroName> <DestinationPath>.tar
-    wsl --export Antigravity C:\Backups\antigravity_backup.tar
-    ```
-    
-    ### Import (Restore)
-    This restores a previously exported distribution to a specific folder.
-    ```powershell
-    # Format: wsl --import <DistroName> <InstallLocation> <BackupPath>.tar
-    wsl --import Antigravity C:\WSL\Antigravity C:\Backups\antigravity_backup.tar
-    ```
-    
-    **Note:** You can also use the helper scripts in `windows/backup_distro.ps1` and `windows/restore_distro.ps1` for an interactive process.
-    
+**Finalize (Initial Setup Only):**
+If this is your first time setting up and the script modified `wsl.conf`, you must restart WSL from PowerShell:
+```powershell
+wsl --shutdown
+```

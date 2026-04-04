@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Gemini CLI
+Comment=Google Gemini Command Line Interface
+Exec=lxterminal -e bash -i -c "mkdir -p ~/gemini && cd ~/gemini && gemini; echo ''; read -p 'Press Enter to exit...'"
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Development;ConsoleOnly;
+X-WSL-No-Export=false

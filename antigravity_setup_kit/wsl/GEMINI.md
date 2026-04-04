@@ -18,7 +18,6 @@
 - Documentation and logs are maintained in `~/agent_docs/`.
 
 ## Infrastructure Protocol
-- **Source of Truth:** The project root directory (mounted via `/mnt/c/...`) is the master repository for this environment.
 - **No Ad-Hoc Config:** NEVER modify system files (`/etc/wsl.conf`, `/usr/local/bin/antigravity`, etc.) directly.
 - **Workflow:**
   1. Modify the file in `antigravity_setup_kit/wsl/` (on the Windows mount).
