@@ -66,7 +66,7 @@ sudo apt update -y
 # NOTE: The 't64' package names (like libasound2t64) are required for modern 
 # Ubuntu 24.04 compatibility.
 echo -e "  ${YELLOW}➔ Installing/Updating system dependencies and Antigravity...${NC}"
-sudo apt install -y curl wget git jq wslu lxterminal yaru-theme-gtk libfuse2t64 libnss3 libasound2t64 libsecret-1-0 gnome-keyring libatk-bridge2.0-0t64 libgtk-3-0t64 libgbm1 fonts-noto-color-emoji fonts-liberation fonts-font-awesome fonts-noto-cjk
+sudo apt install -y curl wget git jq wslu lxterminal yaru-theme-gtk libfuse2t64 libnss3 libasound2t64 libsecret-1-0 gnome-keyring libpam-gnome-keyring libatk-bridge2.0-0t64 libgtk-3-0t64 libgbm1 fonts-noto-color-emoji fonts-liberation fonts-font-awesome fonts-noto-cjk
 
 # We explicitly tell APT to upgrade antigravity if it's already installed,
 # ensuring you always get the latest version.
@@ -213,11 +213,11 @@ echo -e "  ${GREEN}✅ /etc/wsl.conf freshly generated for user '${CURRENT_USER}
 # ------------------------------------------------------------------------------
 # STEP 10: Start Menu Cleanup
 # ------------------------------------------------------------------------------
-# Finally, we hide background tools (like wslview, zutty, and lxterminal) from 
+# Finally, we hide background tools (like wslview and lxterminal) from 
 # the Windows Start Menu so it doesn't get cluttered with useless icons, and 
 # we ensure the main Antigravity icon triggers our shim instead of the raw binary.
 echo -e "\n${BLUE}[6/6] 🧹 Cleaning Start Menu...${NC}"
-for app in wslview zutty lxterminal; do
+for app in wslview lxterminal; do
     SYS_FILE="/usr/share/applications/${app}.desktop"
     if [ -f "$SYS_FILE" ]; then
         # Remove any existing overrides before writing to prevent duplicate lines
@@ -239,7 +239,7 @@ if [ -f "$ANTIGRAVITY_SYS_FILE" ]; then
 fi
 
 # Remove user-level desktop overrides to stick to system defaults
-rm -f ~/.local/share/applications/antigravity.desktop ~/.local/share/applications/wslview.desktop ~/.local/share/applications/zutty.desktop
+rm -f ~/.local/share/applications/antigravity.desktop ~/.local/share/applications/wslview.desktop
 update-desktop-database ~/.local/share/applications/ 2>/dev/null || true
 echo -e "  ${GREEN}✅ Start Menu cleaned.${NC}"
 
