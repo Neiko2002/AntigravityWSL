@@ -66,7 +66,7 @@ sudo apt update -y
 # NOTE: The 't64' package names (like libasound2t64) are required for modern 
 # Ubuntu 24.04 compatibility.
 echo -e "  ${YELLOW}➔ Installing/Updating system dependencies and Antigravity...${NC}"
-sudo apt install -y curl wget git jq wslu lxterminal libfuse2t64 libnss3 libasound2t64 libsecret-1-0 gnome-keyring libatk-bridge2.0-0t64 libgtk-3-0t64 libgbm1 fonts-noto-color-emoji fonts-liberation fonts-font-awesome fonts-noto-cjk
+sudo apt install -y curl wget git jq wslu lxterminal yaru-theme-gtk libfuse2t64 libnss3 libasound2t64 libsecret-1-0 gnome-keyring libatk-bridge2.0-0t64 libgtk-3-0t64 libgbm1 fonts-noto-color-emoji fonts-liberation fonts-font-awesome fonts-noto-cjk
 
 # We explicitly tell APT to upgrade antigravity if it's already installed,
 # ensuring you always get the latest version.
@@ -135,7 +135,50 @@ sudo chmod +x /usr/local/bin/antigravity
 echo -e "  ${GREEN}✅ Shim installed.${NC}"
 
 # ------------------------------------------------------------------------------
-# STEP 6: AI Context Initialization
+# STEP 6: Visual Modernization (GTK & Terminal)
+# ------------------------------------------------------------------------------
+# WHY DO WE DO THIS?
+# By default, Linux apps in WSL look like they are from the 90s. We install a 
+# modern dark theme (Yaru-dark) and configure a black/white color scheme for 
+# lxterminal to match the professional Windows 11 aesthetic.
+echo -e "\n${BLUE}[3.5/6] 🎨 Modernizing Visuals (Dark Mode)...${NC}"
+
+# Configure GTK 3 for Dark Mode
+mkdir -p ~/.config/gtk-3.0
+cat > ~/.config/gtk-3.0/settings.ini <<EOF
+[Settings]
+gtk-theme-name=Yaru-dark
+gtk-icon-theme-name=Yaru
+gtk-font-name=Ubuntu 11
+gtk-application-prefer-dark-theme=1
+EOF
+
+# Configure lxterminal (Gemini CLI) for a clean dark look
+mkdir -p ~/.config/lxterminal
+cp lxterminal.conf ~/.config/lxterminal/lxterminal.conf
+echo -e "  ${GREEN}✅ GTK Dark Mode and lxterminal configuration applied.${NC}"
+
+# ------------------------------------------------------------------------------
+# STEP 7: GitKraken Shim Installation (if present)
+# ------------------------------------------------------------------------------
+# Similar to Antigravity, GitKraken is an Electron app. We apply a Wayland shim 
+# to ensure it uses a native-style frame and sharp rendering on Windows.
+if [ -f "/usr/bin/gitkraken" ] || [ -f "/usr/share/gitkraken/gitkraken" ]; then
+    echo -e "\n${BLUE}[3.6/6] 📦 Installing GitKraken Shim...${NC}"
+    sudo cp gitkraken_shim.sh /usr/local/bin/gitkraken
+    sudo chmod +x /usr/local/bin/gitkraken
+    
+    # Patch the desktop file to use the shim
+    GK_SYS_FILE="/usr/share/applications/gitkraken.desktop"
+    if [ -f "$GK_SYS_FILE" ]; then
+        # Robustly replace any Exec= path with our shim
+        sudo sed -i 's|^Exec=.*|Exec=/usr/local/bin/gitkraken %U|g' "$GK_SYS_FILE"
+    fi
+    echo -e "  ${GREEN}✅ GitKraken shim installed and patched.${NC}"
+fi
+
+# ------------------------------------------------------------------------------
+# STEP 8: AI Context Initialization
 # ------------------------------------------------------------------------------
 # Copies initial knowledge into the ~/.gemini folder so the AI agent remembers 
 # default working directory preferences and rules right from the start.
@@ -145,7 +188,7 @@ cp GEMINI.md ~/.gemini/
 echo -e "  ${GREEN}✅ Agent memory restored to ~/.gemini/GEMINI.md${NC}"
 
 # ------------------------------------------------------------------------------
-# STEP 7: Security Hardening (wsl.conf)
+# STEP 9: Security Hardening (wsl.conf)
 # ------------------------------------------------------------------------------
 # WHY DO WE MODIFY wsl.conf?
 # By default, WSL can read and write to your entire Windows C: drive. If a script goes 
@@ -168,13 +211,13 @@ EOF"
 echo -e "  ${GREEN}✅ /etc/wsl.conf freshly generated for user '${CURRENT_USER}'.${NC}"
 
 # ------------------------------------------------------------------------------
-# STEP 8: Start Menu Cleanup
+# STEP 10: Start Menu Cleanup
 # ------------------------------------------------------------------------------
-# Finally, we hide background tools (like wslview and zutty) from the Windows Start Menu
-# so it doesn't get cluttered with useless icons, and we ensure the main Antigravity 
-# icon triggers our shim instead of the raw binary.
+# Finally, we hide background tools (like wslview, zutty, and lxterminal) from 
+# the Windows Start Menu so it doesn't get cluttered with useless icons, and 
+# we ensure the main Antigravity icon triggers our shim instead of the raw binary.
 echo -e "\n${BLUE}[6/6] 🧹 Cleaning Start Menu...${NC}"
-for app in wslview zutty; do
+for app in wslview zutty lxterminal; do
     SYS_FILE="/usr/share/applications/${app}.desktop"
     if [ -f "$SYS_FILE" ]; then
         # Remove any existing overrides before writing to prevent duplicate lines
