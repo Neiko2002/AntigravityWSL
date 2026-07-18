@@ -9,6 +9,12 @@ This script acts as the main gateway for Windows users to:
 3. Restore a previous backup.
 #>
 
+function Safe-Pause {
+    if (-not $env:AUTOMATED -and [Environment]::UserInteractive) {
+        Pause
+    }
+}
+
 function Show-Menu {
     Clear-Host
     Write-Host "==========================================" -ForegroundColor Cyan
@@ -79,7 +85,7 @@ function Setup-Distro {
             Write-Host "`n✅ Fresh distro created." -ForegroundColor Green
         } else {
             Write-Host "❌ Failed to create the Antigravity WSL instance." -ForegroundColor Red
-            Pause
+            Safe-Pause
             return
         }
     }
@@ -110,6 +116,56 @@ function Setup-Distro {
         if ($LASTEXITCODE -eq 0) {
             Write-Host "`n✅ Linux setup/update completed successfully!" -ForegroundColor Green
             
+            # ---------------------------------------------------------
+            # PART 4: AUTOMATED WINDOWS START MENU SHORTCUT CREATION
+            # ---------------------------------------------------------
+            Write-Host "`n4. Creating Windows Start Menu shortcuts..." -ForegroundColor Cyan
+            try {
+                $wslUser = (wsl -d Antigravity whoami 2>$null).Trim()
+                if ([string]::IsNullOrWhiteSpace($wslUser)) { $wslUser = "nico" }
+                
+                $StartMenuDir = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs"
+                $AntigravityDir = Join-Path $StartMenuDir "Antigravity"
+                if (!(Test-Path $AntigravityDir)) { New-Item -ItemType Directory -Path $AntigravityDir | Out-Null }
+
+                # Clean up ad-hoc top-level shortcuts/folders outside the Antigravity folder
+                Remove-Item -Force -ErrorAction SilentlyContinue "$StartMenuDir\Antigravity CLI.lnk"
+                Remove-Item -Force -ErrorAction SilentlyContinue "$StartMenuDir\Antigravity IDE.lnk"
+                Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$StartMenuDir\Antigravity CLI"
+                Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$StartMenuDir\Antigravity IDE"
+                Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$StartMenuDir\Gemini"
+
+                $WScriptShell = New-Object -ComObject WScript.Shell
+
+                # 1. Antigravity IDE (Antigravity).lnk inside Antigravity folder
+                $IdeLnkPath = Join-Path $AntigravityDir "Antigravity IDE (Antigravity).lnk"
+                $IdeLnk = $WScriptShell.CreateShortcut($IdeLnkPath)
+                $IdeLnk.TargetPath = "$env:SystemRoot\system32\wsl.exe"
+                $IdeLnk.Arguments = "-d Antigravity -u $wslUser -- /usr/local/bin/antigravity"
+                $IdeLnk.Description = "Launch Antigravity IDE 2.1.1 in WSL"
+                $IdeLnk.Save()
+
+                # 2. Antigravity CLI (Antigravity).lnk inside Antigravity folder
+                $CliLnkPath = Join-Path $AntigravityDir "Antigravity CLI (Antigravity).lnk"
+                $CliLnk = $WScriptShell.CreateShortcut($CliLnkPath)
+                $CliLnk.TargetPath = "$env:SystemRoot\system32\cmd.exe"
+                $CliLnk.Arguments = "/c wsl -d Antigravity -u $wslUser -- bash -i -c `"cd ~ && agy`""
+                $CliLnk.IconLocation = "$env:SystemRoot\system32\cmd.exe,0"
+                $CliLnk.Description = "Launch Antigravity CLI (agy) in WSL Home"
+                $CliLnk.Save()
+
+                # 3. GitKraken (Antigravity).lnk inside Antigravity folder
+                $GkLnkPath = Join-Path $AntigravityDir "GitKraken (Antigravity).lnk"
+                $GkLnk = $WScriptShell.CreateShortcut($GkLnkPath)
+                $GkLnk.TargetPath = "$env:SystemRoot\system32\wsl.exe"
+                $GkLnk.Arguments = "-d Antigravity -u $wslUser -- /usr/local/bin/gitkraken"
+                $GkLnk.Description = "Launch GitKraken in WSL"
+                $GkLnk.Save()
+
+                Write-Host "✅ Shortcuts updated in Antigravity folder: IDE, CLI & GitKraken" -ForegroundColor Green
+            } catch {
+                Write-Host "Warning: Could not automatically create Windows Start Menu shortcuts: $_" -ForegroundColor Yellow
+            }
         } else {
             Write-Host "`n❌ Linux setup script returned an error." -ForegroundColor Red
         }
@@ -119,7 +175,7 @@ function Setup-Distro {
     
     # WSL needs to restart for changes to the .wslgconfig to take effect.
     Write-Host "`nNote: If this is your first time, any Windows changes (like the DPI scaling fix) take effect after the next WSL restart ('wsl --shutdown')."
-    Pause
+    Safe-Pause
 }
 
 function Backup-Distro {
@@ -208,17 +264,19 @@ function Restore-Distro {
     Pause
 }
 
-do {
-    Show-Menu
-    $selection = Read-Host "Enter an option (1-3, q)"
-    switch ($selection) {
-        '1' { Setup-Distro }
-        '2' { Backup-Distro }
-        '3' { Restore-Distro }
-        'q' { exit }
-        default {
-            Write-Host "Invalid selection. Please try again." -ForegroundColor Red
-            Start-Sleep -Seconds 2
+if (-not $env:AUTOMATED) {
+    do {
+        Show-Menu
+        $selection = Read-Host "Enter an option (1-3, q)"
+        switch ($selection) {
+            '1' { Setup-Distro }
+            '2' { Backup-Distro }
+            '3' { Restore-Distro }
+            'q' { exit }
+            default {
+                Write-Host "Invalid selection. Please try again." -ForegroundColor Red
+                Start-Sleep -Seconds 2
+            }
         }
-    }
-} while ($true)
+    } while ($true)
+}

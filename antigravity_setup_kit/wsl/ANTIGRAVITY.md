@@ -1,8 +1,13 @@
-## Gemini Agent Context (WSL Edition)
+## Antigravity Agent Context (WSL Edition)
 
 - **Environment:** WSL 2 (Linux)
 - **User:** [Current WSL User]
 - **Shell:** Bash
+
+## Antigravity 2.0 & IDE Ecosystem
+- **Antigravity IDE (v2.1.1+):** Standalone AI-first editor (built on VS Code base) with inline lenses and sidebar pair programmer.
+- **Antigravity 2.0:** Parallel desktop application, multi-agent canvas, and rich HTML auxiliary pane.
+- **Antigravity CLI (`agy`):** Fast terminal-based agent interface.
 
 ## Development Conventions
 - **JavaScript/TypeScript:**
@@ -13,8 +18,9 @@
 - **Project Location:**
   - All source code resides in `~/lang/<language>/`.
 
-## Agent Memory
-- This file resides in `~/.gemini/GEMINI.md`.
+## Agent Memory & Settings
+- CLI Settings: `~/.gemini/antigravity-cli/settings.json`
+- Agent Context: `~/.antigravity/ANTIGRAVITY.md` and `~/.gemini/ANTIGRAVITY.md`
 - Documentation and logs are maintained in `~/agent_docs/`.
 
 ## Infrastructure Protocol

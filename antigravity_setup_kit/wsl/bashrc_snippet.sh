@@ -4,15 +4,15 @@ export BROWSER=wslview
 # Suppress WSL Install Prompt for VSCode-forks
 export DONT_PROMPT_WSL_INSTALL=1
 
-# Bun Setup
+# Bun & Local Bin Setup (Bun & Antigravity CLI)
 export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+export PATH="$BUN_INSTALL/bin:$HOME/.local/bin:$PATH"
 
 # Antigravity Force Scale Factor (Fix for Blurry Text)
 alias antigravity='antigravity --force-device-scale-factor=1'
 
 # Keyring & Secret Service Integration
-# Ensures that apps (like gemini-cli) can securely access stored credentials.
+# Ensures that apps (like antigravity-cli) can securely access stored credentials.
 if [ -n "$DISPLAY" ]; then
     dbus-update-activation-environment --all > /dev/null 2>&1
 fi

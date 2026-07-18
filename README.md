@@ -2,7 +2,7 @@
 
 **Root Directory:** `[Current Project Folder]`
 
-This repository serves as the central documentation and configuration hub for the hybrid Windows/WSL Development Agent. It defines how to set up, maintain, and work within the WSL 2 environment using the Antigravity IDE (Cursor/VSCode fork).
+This repository serves as the central documentation and configuration hub for the hybrid Windows/WSL Development Agent. It defines how to set up, maintain, and work within the WSL 2 environment using the Antigravity IDE (VS Code based AI IDE, version 2.1.1+), Antigravity 2.0, and the Antigravity CLI (`agy`).
 
 ## 1. Quick Start (Restore Environment)
 
@@ -15,7 +15,7 @@ The kit handles:
 *   **WSL Guest:** 
     *   **Security Hardening:** Enforces **Read-Only** access to Windows drives to prevent data loss.
     *   **Scaling Fixes:** Installs a shim to force crisp Wayland rendering.
-    *   **Integration:** Installs `wslu` (browser), configures `.bashrc`, and restores Agent memory (`GEMINI.md`).
+    *   **Integration:** Installs `wslu` (browser), configures `.bashrc`, installs Antigravity CLI (`agy`), and restores Agent memory (`ANTIGRAVITY.md`).
 *   **Backup & Recovery:** Provides interactive scripts (`backup_distro.ps1`, `restore_distro.ps1`) and documentation to protect your environment.
 
 See [`antigravity_setup_kit/README.md`](./antigravity_setup_kit/README.md) for execution instructions.

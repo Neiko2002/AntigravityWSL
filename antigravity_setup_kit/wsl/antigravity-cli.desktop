@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Antigravity CLI
+Comment=Google Antigravity Command Line Interface (agy)
+Exec=lxterminal -e bash -i -c "agy; echo ''; read -p 'Press Enter to exit...'"
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Development;ConsoleOnly;
+X-WSL-No-Export=false

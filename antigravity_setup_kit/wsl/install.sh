@@ -60,25 +60,26 @@ echo -e "  ${YELLOW}➔ Updating apt repositories...${NC}"
 sudo apt update -y
 
 # ------------------------------------------------------------------------------
-# STEP 2: Installing Dependencies and the IDE
+# STEP 2: Installing Dependencies and Antigravity IDE (v2.1.1+)
 # ------------------------------------------------------------------------------
 # We install standard Linux graphics and sound drivers so the IDE can run smoothly.
 # NOTE: The 't64' package names (like libasound2t64) are required for modern 
 # Ubuntu 24.04 compatibility.
-echo -e "  ${YELLOW}➔ Installing/Updating system dependencies and Antigravity...${NC}"
+echo -e "  ${YELLOW}➔ Installing/Updating system dependencies...${NC}"
 sudo apt install -y curl wget git jq wslu lxterminal yaru-theme-gtk libfuse2t64 libnss3 libasound2t64 libsecret-1-0 gnome-keyring libpam-gnome-keyring libatk-bridge2.0-0t64 libgtk-3-0t64 libgbm1 fonts-noto-color-emoji fonts-liberation fonts-font-awesome fonts-noto-cjk
 
-# We explicitly tell APT to upgrade antigravity if it's already installed,
-# ensuring you always get the latest version.
-sudo apt install --only-upgrade -y antigravity || sudo apt install -y antigravity
+echo -e "  ${YELLOW}➔ Downloading and installing Antigravity IDE v2.1.1...${NC}"
+sudo mkdir -p /opt/antigravity-ide
+curl -fsSL 'https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.1.1-6123990880747520/linux-x64/Antigravity%20IDE.tar.gz' | sudo tar -xzf - --strip-components=1 -C /opt/antigravity-ide
+echo -e "  ${GREEN}✅ Antigravity IDE v2.1.1 installed at /opt/antigravity-ide/${NC}"
 
 # ------------------------------------------------------------------------------
-# STEP 3: Setup Node Runtime (Bun) and Gemini CLI
+# STEP 3: Setup Node Runtime (Bun) and Antigravity CLI
 # ------------------------------------------------------------------------------
 # WHY BUN?
-# Bun is a faster, modern alternative to Node.js. It's required to run the Gemini 
-# command line AI tool because it powers our scripts behind the scenes.
-echo -e "\n${BLUE}[1.5/6] 🐰 Installing Bun and Gemini CLI...${NC}"
+# Bun is a faster, modern alternative to Node.js. It's required to run the Antigravity 
+# command line AI tool (agy) because it powers our scripts behind the scenes.
+echo -e "\n${BLUE}[1.5/6] 🐰 Installing Bun and Antigravity CLI...${NC}"
 if ! command -v bun &> /dev/null; then
     echo -e "  ${YELLOW}➔ Bun not found. Installing bun...${NC}"
     curl -fsSL https://bun.sh/install | bash
@@ -88,23 +89,31 @@ if ! command -v bun &> /dev/null; then
 fi
 
 # WHY DO WE SYMLINK NODE TO BUN?
-# The Gemini CLI (and many npm packages) hardcode "#!/usr/bin/env node" at the 
+# The Antigravity CLI (and many npm packages) hardcode "#!/usr/bin/env node" at the 
 # top of their files. Since we refuse to install Node.js (we only use Bun), the 
 # scripts crash. Creating a 'node' symlink that points to 'bun' tricks the 
 # system into using Bun to run Node scripts flawlessly.
 echo -e "  ${YELLOW}➔ Creating global 'node' alias to 'bun' to satisfy dependencies...${NC}"
 sudo ln -sf "$HOME/.bun/bin/bun" /usr/local/bin/node
 
-echo -e "  ${YELLOW}➔ Installing @google/gemini-cli globally via bun...${NC}"
-bun install -g @google/gemini-cli
-echo -e "  ${GREEN}✅ gemini-cli installed. Run 'gemini' to authenticate later.${NC}"
+echo -e "  ${YELLOW}➔ Installing Antigravity CLI (agy)...${NC}"
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+if [ -f "$HOME/.local/bin/agy" ]; then
+    sudo ln -sf "$HOME/.local/bin/agy" /usr/local/bin/agy
+fi
+echo -e "  ${GREEN}✅ Antigravity CLI (agy) installed. Run 'agy' to authenticate later.${NC}"
 
-# Install the Gemini app icon so you can launch it from the Windows Start Menu.
-echo -e "\n${BLUE}[1.6/6] 🖥️  Installing Gemini CLI Desktop Icon...${NC}"
-sudo cp gemini.desktop /usr/share/applications/
+# Clean up legacy gemini.desktop if present
+sudo rm -f /usr/share/applications/gemini.desktop
+
+# Install the Antigravity CLI app icon so you can launch it from the Windows Start Menu.
+echo -e "\n${BLUE}[1.6/6] 🖥️  Installing Antigravity CLI Desktop Icon...${NC}"
+sudo cp antigravity-cli.desktop /usr/share/applications/
 # Fix CRLF line endings added by Windows editors, which completely breaks WSLg's desktop parser
-sudo sed -i 's/\r$//' /usr/share/applications/gemini.desktop
-echo -e "  ${GREEN}✅ gemini.desktop installed (fixed line endings).${NC}"
+sudo sed -i 's/\r$//' /usr/share/applications/antigravity-cli.desktop
+echo -e "  ${GREEN}✅ antigravity-cli.desktop installed (fixed line endings).${NC}"
 
 # ------------------------------------------------------------------------------
 # STEP 4: Shell Configuration (.bashrc)
@@ -153,39 +162,44 @@ gtk-font-name=Ubuntu 11
 gtk-application-prefer-dark-theme=1
 EOF
 
-# Configure lxterminal (Gemini CLI) for a clean dark look
+# Configure lxterminal (Antigravity CLI) for a clean dark look
 mkdir -p ~/.config/lxterminal
 cp lxterminal.conf ~/.config/lxterminal/lxterminal.conf
 echo -e "  ${GREEN}✅ GTK Dark Mode and lxterminal configuration applied.${NC}"
 
 # ------------------------------------------------------------------------------
-# STEP 7: GitKraken Shim Installation (if present)
+# STEP 7: GitKraken Automatic Installation & Shim
 # ------------------------------------------------------------------------------
-# Similar to Antigravity, GitKraken is an Electron app. We apply a Wayland shim 
-# to ensure it uses a native-style frame and sharp rendering on Windows.
-if [ -f "/usr/bin/gitkraken" ] || [ -f "/usr/share/gitkraken/gitkraken" ]; then
-    echo -e "\n${BLUE}[3.6/6] 📦 Installing GitKraken Shim...${NC}"
-    sudo cp gitkraken_shim.sh /usr/local/bin/gitkraken
-    sudo chmod +x /usr/local/bin/gitkraken
-    
-    # Patch the desktop file to use the shim
-    GK_SYS_FILE="/usr/share/applications/gitkraken.desktop"
-    if [ -f "$GK_SYS_FILE" ]; then
-        # Robustly replace any Exec= path with our shim
-        sudo sed -i 's|^Exec=.*|Exec=/usr/local/bin/gitkraken %U|g' "$GK_SYS_FILE"
-    fi
-    echo -e "  ${GREEN}✅ GitKraken shim installed and patched.${NC}"
+# We automatically download and install the latest GitKraken release, and apply a 
+# Wayland shim to ensure it uses a native-style frame and sharp rendering on Windows.
+echo -e "\n${BLUE}[3.6/6] 📦 Downloading & Installing latest GitKraken...${NC}"
+curl -fsSL -L -A 'Mozilla/5.0' 'https://release.gitkraken.com/linux/gitkraken-amd64.deb' -o /tmp/gitkraken.deb
+sudo apt install -y /tmp/gitkraken.deb
+rm -f /tmp/gitkraken.deb
+
+echo -e "  ${YELLOW}➔ Installing GitKraken Shim...${NC}"
+sudo cp gitkraken_shim.sh /usr/local/bin/gitkraken
+sudo chmod +x /usr/local/bin/gitkraken
+
+GK_SYS_FILE="/usr/share/applications/gitkraken.desktop"
+if [ -f "$GK_SYS_FILE" ]; then
+    # Robustly replace any Exec= path with our shim
+    sudo sed -i 's|^Exec=.*|Exec=/usr/local/bin/gitkraken %U|g' "$GK_SYS_FILE"
+    sudo sed -i 's/\r$//' "$GK_SYS_FILE"
 fi
+echo -e "  ${GREEN}✅ GitKraken installed and shimmed successfully.${NC}"
 
 # ------------------------------------------------------------------------------
 # STEP 8: AI Context Initialization
 # ------------------------------------------------------------------------------
-# Copies initial knowledge into the ~/.gemini folder so the AI agent remembers 
-# default working directory preferences and rules right from the start.
-echo -e "\n${BLUE}[4/6] 🧠 Bootstrapping Agent Context (GEMINI.md)...${NC}"
-mkdir -p ~/.gemini
-cp GEMINI.md ~/.gemini/
-echo -e "  ${GREEN}✅ Agent memory restored to ~/.gemini/GEMINI.md${NC}"
+# Copies initial knowledge into the ~/.antigravity and ~/.gemini folders so the AI 
+# agent remembers default working directory preferences and rules right from the start.
+echo -e "\n${BLUE}[4/6] 🧠 Bootstrapping Agent Context (ANTIGRAVITY.md)...${NC}"
+mkdir -p ~/.antigravity ~/.gemini/antigravity-cli ~/.gemini
+cp ANTIGRAVITY.md ~/.antigravity/
+cp ANTIGRAVITY.md ~/.gemini/antigravity-cli/
+cp ANTIGRAVITY.md ~/.gemini/
+echo -e "  ${GREEN}✅ Agent memory restored to ~/.antigravity/ANTIGRAVITY.md${NC}"
 
 # ------------------------------------------------------------------------------
 # STEP 9: Security Hardening (wsl.conf)
@@ -211,16 +225,15 @@ EOF"
 echo -e "  ${GREEN}✅ /etc/wsl.conf freshly generated for user '${CURRENT_USER}'.${NC}"
 
 # ------------------------------------------------------------------------------
-# STEP 10: Start Menu Cleanup
+# STEP 10: Start Menu Desktop Integration
 # ------------------------------------------------------------------------------
-# Finally, we hide background tools (like wslview and lxterminal) from 
-# the Windows Start Menu so it doesn't get cluttered with useless icons, and 
-# we ensure the main Antigravity icon triggers our shim instead of the raw binary.
-echo -e "\n${BLUE}[6/6] 🧹 Cleaning Start Menu...${NC}"
+# We install clean desktop entries for Antigravity IDE and Antigravity CLI into 
+# /usr/share/applications/ so WSLg automatically exports them to the Windows Start Menu,
+# while hiding internal background utilities (like wslview and lxterminal).
+echo -e "\n${BLUE}[6/6] 🧹 Configuring Start Menu Shortcuts...${NC}"
 for app in wslview lxterminal; do
     SYS_FILE="/usr/share/applications/${app}.desktop"
     if [ -f "$SYS_FILE" ]; then
-        # Remove any existing overrides before writing to prevent duplicate lines
         sudo sed -i '/NoDisplay=/d' "$SYS_FILE"
         sudo sed -i '/X-WSL-No-Export=/d' "$SYS_FILE" 2>/dev/null || true
         echo "NoDisplay=true" | sudo tee -a "$SYS_FILE" > /dev/null
@@ -228,20 +241,22 @@ for app in wslview lxterminal; do
     fi
 done
 
-# Patch system Antigravity entry to use shim
-ANTIGRAVITY_SYS_FILE="/usr/share/applications/antigravity.desktop"
-if [ -f "$ANTIGRAVITY_SYS_FILE" ]; then
-    echo -e "  ${YELLOW}➔ Patching system antigravity.desktop to use shim...${NC}"
-    sudo sed -i 's|Exec=/usr/share/antigravity/antigravity|Exec=/usr/local/bin/antigravity|g' "$ANTIGRAVITY_SYS_FILE"
-    sudo sed -i '/NoDisplay=/d' "$ANTIGRAVITY_SYS_FILE"
-    sudo sed -i '/X-WSL-No-Export=/d' "$ANTIGRAVITY_SYS_FILE" 2>/dev/null || true
-    echo "X-WSL-No-Export=false" | sudo tee -a "$ANTIGRAVITY_SYS_FILE" > /dev/null
-fi
+# Install clean Antigravity IDE system desktop entry
+echo -e "  ${YELLOW}➔ Installing Antigravity IDE desktop entry...${NC}"
+sudo cp antigravity.desktop /usr/share/applications/antigravity.desktop
+sudo sed -i 's/\r$//' /usr/share/applications/antigravity.desktop
 
-# Remove user-level desktop overrides to stick to system defaults
-rm -f ~/.local/share/applications/antigravity.desktop ~/.local/share/applications/wslview.desktop
-update-desktop-database ~/.local/share/applications/ 2>/dev/null || true
-echo -e "  ${GREEN}✅ Start Menu cleaned.${NC}"
+# Install clean Antigravity CLI system desktop entry
+echo -e "  ${YELLOW}➔ Installing Antigravity CLI desktop entry...${NC}"
+sudo cp antigravity-cli.desktop /usr/share/applications/antigravity-cli.desktop
+sudo sed -i 's/\r$//' /usr/share/applications/antigravity-cli.desktop
+
+# Remove outdated gemini desktop file if present
+sudo rm -f /usr/share/applications/gemini.desktop
+rm -f ~/.local/share/applications/antigravity.desktop ~/.local/share/applications/antigravity-cli.desktop ~/.local/share/applications/gemini.desktop ~/.local/share/applications/wslview.desktop
+
+update-desktop-database /usr/share/applications/ 2>/dev/null || true
+echo -e "  ${GREEN}✅ Start Menu shortcuts configured.${NC}"
 
 echo -e "\n${GREEN}🎉 Done! Antigravity is setup and updated.${NC}"
 echo -e "${YELLOW}⚠️  IMPORTANT: If you made changes to wsl.conf, please run 'wsl --shutdown' from Windows PowerShell to apply them.${NC}"

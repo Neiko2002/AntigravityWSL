@@ -36,9 +36,10 @@ If you prefer to run the internal Linux setup manually, or if you need to troubl
 
 ### What does `install.sh` do?
 *   **Updates Repositories:** Pulls the newest apt lists.
-*   **Installs & Upgrades:** Sets up necessary libraries (Ubuntu 24.04 `t64` libraries) and explicitly forces an upgrade of the `antigravity` package to the latest version.
-*   **Installs Gemini CLI:** Sets up Bun and the `@google/gemini-cli` environment.
-*   **Configures IDE Shim:** Installs the `antigravity_shim.sh` wrapper (adds Wayland scaling flags) and the `.desktop` UI icons for Antigravity and Gemini.
+*   **Installs & Upgrades:** Sets up necessary libraries (Ubuntu 24.04 `t64` libraries) and explicitly forces an upgrade of the `antigravity` package to the latest version (Antigravity IDE v2.1.1+ / Antigravity 2.0).
+*   **Installs Antigravity CLI:** Sets up Bun runtime and installs `@google/antigravity-cli` (`agy`) globally.
+*   **Configures IDE Shim:** Installs the `antigravity_shim.sh` wrapper (adds Wayland scaling flags) and desktop icons for Antigravity IDE and Antigravity CLI.
+*   **Restores Agent Context:** Bootstraps `ANTIGRAVITY.md` into `~/.antigravity/` and `~/.gemini/antigravity-cli/`.
 *   **Applies Hardened `wsl.conf`:** Enforces Read-Only mounting for `/mnt/c` to protect Windows from runaway commands.
 *   **Cleans Menus:** Removes redundant app icons (like `wslview`) from the Windows Start menu.
 

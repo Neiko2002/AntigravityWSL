@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Antigravity
-Comment=Experience liftoff
+Name=Antigravity IDE
+Comment=Antigravity AI-First IDE (v2.1.1+)
 GenericName=Text Editor
 Exec=/usr/local/bin/antigravity %F
 Icon=antigravity
@@ -9,6 +9,7 @@ StartupNotify=false
 StartupWMClass=Antigravity
 Categories=TextEditor;Development;IDE;
 MimeType=application/x-antigravity-workspace;
+X-WSL-No-Export=false
 Actions=new-empty-window;
 Keywords=vscode;
 

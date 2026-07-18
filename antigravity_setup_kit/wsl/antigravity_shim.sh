@@ -2,10 +2,13 @@
 # Antigravity Shim for Wayland/Ozone
 # Wraps the binary to force Wayland support on WSLg
 
-BIN_PATH="/usr/share/antigravity/antigravity"
+BIN_PATH="/opt/antigravity-ide/antigravity-ide"
+if [ ! -f "$BIN_PATH" ]; then
+    BIN_PATH="/usr/share/antigravity/antigravity"
+fi
 
 if [ ! -f "$BIN_PATH" ]; then
-    echo "Error: Antigravity binary not found at $BIN_PATH."
+    echo "Error: Antigravity binary not found."
     echo "Please ensure the installation process finished correctly."
     exit 1
 fi
