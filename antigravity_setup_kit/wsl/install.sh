@@ -71,6 +71,10 @@ sudo apt install -y curl wget git jq wslu lxterminal yaru-theme-gtk libfuse2t64 
 echo -e "  ${YELLOW}➔ Downloading and installing Antigravity IDE v2.1.1...${NC}"
 sudo mkdir -p /opt/antigravity-ide
 curl -fsSL 'https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.1.1-6123990880747520/linux-x64/Antigravity%20IDE.tar.gz' | sudo tar -xzf - --strip-components=1 -C /opt/antigravity-ide
+if [ -f "/opt/antigravity-ide/resources/app/resources/linux/code.png" ]; then
+    sudo cp /opt/antigravity-ide/resources/app/resources/linux/code.png /usr/share/pixmaps/antigravity.png
+    sudo chmod 644 /usr/share/pixmaps/antigravity.png
+fi
 echo -e "  ${GREEN}✅ Antigravity IDE v2.1.1 installed at /opt/antigravity-ide/${NC}"
 
 # ------------------------------------------------------------------------------

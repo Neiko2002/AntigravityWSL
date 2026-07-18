@@ -128,33 +128,30 @@ function Setup-Distro {
                 $AntigravityDir = Join-Path $StartMenuDir "Antigravity"
                 if (!(Test-Path $AntigravityDir)) { New-Item -ItemType Directory -Path $AntigravityDir | Out-Null }
 
-                # Clean up ad-hoc top-level shortcuts/folders outside the Antigravity folder
-                Remove-Item -Force -ErrorAction SilentlyContinue "$StartMenuDir\Antigravity CLI.lnk"
-                Remove-Item -Force -ErrorAction SilentlyContinue "$StartMenuDir\Antigravity IDE.lnk"
-                Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$StartMenuDir\Antigravity CLI"
-                Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$StartMenuDir\Antigravity IDE"
+                # Clean up legacy folders
                 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$StartMenuDir\Gemini"
 
                 $WScriptShell = New-Object -ComObject WScript.Shell
 
-                # 1. Antigravity IDE (Antigravity).lnk inside Antigravity folder
-                $IdeLnkPath = Join-Path $AntigravityDir "Antigravity IDE (Antigravity).lnk"
-                $IdeLnk = $WScriptShell.CreateShortcut($IdeLnkPath)
-                $IdeLnk.TargetPath = "$env:SystemRoot\system32\wsl.exe"
-                $IdeLnk.Arguments = "-d Antigravity -u $wslUser -- /usr/local/bin/antigravity"
-                $IdeLnk.Description = "Launch Antigravity IDE 2.1.1 in WSL"
-                $IdeLnk.Save()
+                # --- WSL SHORTCUTS (Inside 'Antigravity' Folder) ---
+                # 1. Antigravity IDE (Antigravity).lnk
+                $IdeWslLnkPath = Join-Path $AntigravityDir "Antigravity IDE (Antigravity).lnk"
+                $IdeWslLnk = $WScriptShell.CreateShortcut($IdeWslLnkPath)
+                $IdeWslLnk.TargetPath = "$env:SystemRoot\system32\wsl.exe"
+                $IdeWslLnk.Arguments = "-d Antigravity -u $wslUser -- /usr/local/bin/antigravity"
+                $IdeWslLnk.Description = "Launch Antigravity IDE 2.1.1 in WSL"
+                $IdeWslLnk.Save()
 
-                # 2. Antigravity CLI (Antigravity).lnk inside Antigravity folder
-                $CliLnkPath = Join-Path $AntigravityDir "Antigravity CLI (Antigravity).lnk"
-                $CliLnk = $WScriptShell.CreateShortcut($CliLnkPath)
-                $CliLnk.TargetPath = "$env:SystemRoot\system32\cmd.exe"
-                $CliLnk.Arguments = "/c wsl -d Antigravity -u $wslUser -- bash -i -c `"cd ~ && agy`""
-                $CliLnk.IconLocation = "$env:SystemRoot\system32\cmd.exe,0"
-                $CliLnk.Description = "Launch Antigravity CLI (agy) in WSL Home"
-                $CliLnk.Save()
+                # 2. Antigravity CLI (Antigravity).lnk
+                $CliWslLnkPath = Join-Path $AntigravityDir "Antigravity CLI (Antigravity).lnk"
+                $CliWslLnk = $WScriptShell.CreateShortcut($CliWslLnkPath)
+                $CliWslLnk.TargetPath = "$env:SystemRoot\system32\cmd.exe"
+                $CliWslLnk.Arguments = "/c wsl -d Antigravity -u $wslUser -- bash -i -c `"cd ~ && agy`""
+                $CliWslLnk.IconLocation = "$env:SystemRoot\system32\cmd.exe,0"
+                $CliWslLnk.Description = "Launch Antigravity CLI (agy) in WSL Home"
+                $CliWslLnk.Save()
 
-                # 3. GitKraken (Antigravity).lnk inside Antigravity folder
+                # 3. GitKraken (Antigravity).lnk
                 $GkLnkPath = Join-Path $AntigravityDir "GitKraken (Antigravity).lnk"
                 $GkLnk = $WScriptShell.CreateShortcut($GkLnkPath)
                 $GkLnk.TargetPath = "$env:SystemRoot\system32\wsl.exe"
@@ -162,7 +159,7 @@ function Setup-Distro {
                 $GkLnk.Description = "Launch GitKraken in WSL"
                 $GkLnk.Save()
 
-                Write-Host "✅ Shortcuts updated in Antigravity folder: IDE, CLI & GitKraken" -ForegroundColor Green
+                Write-Host "✅ WSL Start Menu shortcuts updated in 'Antigravity' folder" -ForegroundColor Green
             } catch {
                 Write-Host "Warning: Could not automatically create Windows Start Menu shortcuts: $_" -ForegroundColor Yellow
             }
